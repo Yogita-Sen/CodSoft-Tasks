@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: #3156c9;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h3 {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .card h2 {
+            font-size: 25px;
+        }
+
+        .income {
+            color: #198754;
+        }
+
+        .expenses {
+            color: #dc3545;
+        }
+
+        .balance {
+            color: #3156c9;
+        }
+
+        .form-section,
+        .history-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            border: none;
+            background: #3156c9;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .submit-btn {
+            grid-column: 1 / -1;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filters input,
+        .filters select {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transaction-info {
+            flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .transaction-info h3 {
+            margin-bottom: 5px;
+        }
+
+        .transaction-info p {
+            color: #777;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .transaction-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .transaction-actions button {
+            width: auto;
+            padding: 8px 12px;
+        }
+
+        .edit-btn {
+            background: #e5a323;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .income-amount {
+            color: #198754;
+        }
+
+        .expense-amount {
+            color: #dc3545;
+        }
+
+        #emptyMessage {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 10px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            form {
+                grid-template-columns: 1fr;
+            }
+
+            .submit-btn {
+                grid-column: auto;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .transaction {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .transaction-actions {
+                width: 100%;
+            }
+
+            .transaction-actions button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Expense Tracker</h1>
+        <p>Manage your income and expenses easily</p>
+    </header>
+
+    <div class="summary">
+
+        <div class="card">
+            <h3>Total Income</h3>
+            <h2 class="income" id="totalIncome">₹0.00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Total Expenses</h3>
+            <h2 class="expenses" id="totalExpenses">₹0.00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Current Balance</h3>
+            <h2 class="balance" id="balance">₹0.00</h2>
+        </div>
+
+    </div>
+
+    <div class="form-section">
+
+        <h2 id="formTitle">Add Transaction</h2>
+
+        <form id="transactionForm">
+
+            <input
+                type="text"
+                id="title"
+                placeholder="Transaction title"
+                maxlength="100"
+                required
+            >
+
+            <input
+                type="number"
+                id="amount"
+                placeholder="Amount (₹)"
+                min="0.01"
+                step="0.01"
+                required
+            >
+
+            <select id="type" required>
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+            </select>
+
+            <select id="category" required>
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Education">Education</option>
+                <option value="Salary">Salary</option>
+                <option value="Bills">Bills</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <input type="date" id="date" required>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Add Transaction
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="history-section">
+
+        <h2>Transaction History</h2>
+
+        <div class="filters">
+
+            <input
+                type="text"
+                id="search"
+                placeholder="Search transactions..."
+            >
+
+            <select id="filterCategory">
+                <option value="All">All Categories</option>
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Education">Education</option>
+                <option value="Salary">Salary</option>
+                <option value="Bills">Bills</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <select id="filterType">
+                <option value="All">All Transactions</option>
+                <option value="income">Income</option>
+                <option value="expense">Expenses</option>
+            </select>
+
+        </div>
+
+        <div id="transactionList"></div>
+
+        <p id="emptyMessage">No transactions found.</p>
+
+    </div>
+
+</div>
+
+<script>
+    const transactionForm = document.getElementById("transactionForm");
+    const titleInput = document.getElementById("title");
+    const amountInput = document.getElementById("amount");
+    const typeInput = document.getElementById("type");
+    const categoryInput = document.getElementById("category");
+    const dateInput = document.getElementById("date");
+
+    const transactionList = document.getElementById("transactionList");
+    const searchInput = document.getElementById("search");
+    const filterCategory = document.getElementById("filterCategory");
+    const filterType = document.getElementById("filterType");
+
+    const submitBtn = document.getElementById("submitBtn");
+    const formTitle = document.getElementById("formTitle");
+    const emptyMessage = document.getElementById("emptyMessage");
+
+    let transactions = [];
+    let editId = null;
+
+    dateInput.value = new Date().toISOString().split("T")[0];
+
+    try {
+        const savedData = JSON.parse(
+            localStorage.getItem("expenseTransactions")
+        );
+
+        if (Array.isArray(savedData)) {
+            transactions = savedData.filter(item =>
+                item &&
+                Number.isSafeInteger(item.id) &&
+                typeof item.title === "string" &&
+                Number.isFinite(item.amount) &&
+                item.amount > 0 &&
+                ["income", "expense"].includes(item.type) &&
+                typeof item.category === "string" &&
+                typeof item.date === "string"
+            );
+        }
+    } catch (error) {
+        transactions = [];
+    }
+
+    function saveTransactions() {
+        localStorage.setItem(
+            "expenseTransactions",
+            JSON.stringify(transactions)
+        );
+    }
+
+    function formatMoney(amount) {
+        return amount.toLocaleString("en-IN", {
+            style: "currency",
+            currency: "INR"
+        });
+    }
+
+    function updateSummary() {
+        const income = transactions
+            .filter(item => item.type === "income")
+            .reduce((sum, item) => sum + item.amount, 0);
+
+        const expenses = transactions
+            .filter(item => item.type === "expense")
+            .reduce((sum, item) => sum + item.amount, 0);
+
+        document.getElementById("totalIncome").textContent =
+            formatMoney(income);
+
+        document.getElementById("totalExpenses").textContent =
+            formatMoney(expenses);
+
+        document.getElementById("balance").textContent =
+            formatMoney(income - expenses);
+    }
+
+    function renderTransactions() {
+        transactionList.replaceChildren();
+
+        const searchText = searchInput.value.trim().toLowerCase();
+        const selectedCategory = filterCategory.value;
+        const selectedType = filterType.value;
+
+        const filteredTransactions = transactions
+            .filter(item => {
+                const matchesSearch =
+                    item.title.toLowerCase().includes(searchText) ||
+                    item.category.toLowerCase().includes(searchText);
+
+                const matchesCategory =
+                    selectedCategory === "All" ||
+                    item.category === selectedCategory;
+
+                const matchesType =
+                    selectedType === "All" ||
+                    item.type === selectedType;
+
+                return matchesSearch && matchesCategory && matchesType;
+            })
+            .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+
+        filteredTransactions.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "transaction";
+
+            const info = document.createElement("div");
+            info.className = "transaction-info";
+
+            const heading = document.createElement("h3");
+            heading.textContent = item.title;
+
+            const details = document.createElement("p");
+            details.textContent = item.category + " | " + item.date;
+
+            const amount = document.createElement("div");
+            amount.className =
+                "transaction-amount " +
+                (item.type === "income" ? "income-amount" : "expense-amount");
+
+            amount.textContent =
+                (item.type === "income" ? "+ " : "- ") +
+                formatMoney(item.amount);
+
+            const actions = document.createElement("div");
+            actions.className = "transaction-actions";
+
+            const editBtn = document.createElement("button");
+            editBtn.className = "edit-btn";
+            editBtn.textContent = "Edit";
+
+            editBtn.addEventListener("click", () => {
+                titleInput.value = item.title;
+                amountInput.value = item.amount;
+                typeInput.value = item.type;
+                categoryInput.value = item.category;
+                dateInput.value = item.date;
+
+                editId = item.id;
+                formTitle.textContent = "Edit Transaction";
+                submitBtn.textContent = "Update Transaction";
+
+                transactionForm.scrollIntoView({
+                    behavior: "smooth"
+                });
+            });
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.textContent = "Delete";
+
+            deleteBtn.addEventListener("click", () => {
+                transactions = transactions.filter(
+                    transaction => transaction.id !== item.id
+                );
+
+                if (editId === item.id) {
+                    resetForm();
+                }
+
+                saveTransactions();
+                renderTransactions();
+            });
+
+            info.append(heading, details);
+            actions.append(editBtn, deleteBtn);
+            row.append(info, amount, actions);
+
+            transactionList.appendChild(row);
+        });
+
+        emptyMessage.style.display =
+            filteredTransactions.length === 0 ? "block" : "none";
+
+        updateSummary();
+    }
+
+    function resetForm() {
+        transactionForm.reset();
+
+        editId = null;
+        formTitle.textContent = "Add Transaction";
+        submitBtn.textContent = "Add Transaction";
+
+        dateInput.value = new Date().toISOString().split("T")[0];
+    }
+
+    transactionForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const title = titleInput.value.trim();
+        const amount = Number(amountInput.value);
+        const type = typeInput.value;
+        const category = categoryInput.value;
+        const date = dateInput.value;
+
+        if (!title || title.length > 100) {
+            alert("Please enter a valid transaction title.");
+            return;
+        }
+
+        if (!Number.isFinite(amount) || amount <= 0) {
+            alert("Please enter an amount greater than zero.");
+            return;
+        }
+
+        if (!date || Number.isNaN(Date.parse(date))) {
+            alert("Please select a valid date.");
+            return;
+        }
+
+        if (editId !== null) {
+            const transaction = transactions.find(
+                item => item.id === editId
+            );
+
+            if (transaction) {
+                transaction.title = title;
+                transaction.amount = amount;
+                transaction.type = type;
+                transaction.category = category;
+                transaction.date = date;
+            }
+        } else {
+            transactions.push({
+                id: Date.now(),
+                title: title,
+                amount: amount,
+                type: type,
+                category: category,
+                date: date
+            });
+        }
+
+        saveTransactions();
+        resetForm();
+        renderTransactions();
+    });
+
+    searchInput.addEventListener("input", renderTransactions);
+    filterCategory.addEventListener("change", renderTransactions);
+    filterType.addEventListener("change", renderTransactions);
+
+    renderTransactions();
+</script>
+
+</body>
+</html>
